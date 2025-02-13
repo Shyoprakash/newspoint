@@ -1,9 +1,10 @@
 import React from 'react'
+import Navbar from './Componets/Navbar'
 
 const App = () => {
   return (
-    <div class="text-3xl font-bold underline">
-      raja ram
+    <div>
+      <Navbar/>
     </div>
   )
 }
