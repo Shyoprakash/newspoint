@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from '@mantine/core';
+import { Link } from 'react-router-dom';
+
 function Login() {
   const [isEyeClick, setIsEyeClick] = useState(false);
   const handleEyeClick = () => {
     setIsEyeClick(!isEyeClick);
   };
+
+  
+
   return (
     <div className="bg-gray-100 h-screen flex justify-center items-center">
       <motion.div
@@ -16,7 +21,7 @@ function Login() {
         className="w-96 rounded-2xl p-6 shadow-md bg-white"
       >
         <h1 className="text-center text-2xl font-bold mb-4">Welcome Back</h1>
-        <form className="space-y-6 w-full">
+        <form className="space-y-6 w-full sm:">
           <div className="flex gap-2   ">
             <Mail className="text-gray-500" />
             <input
@@ -37,8 +42,8 @@ function Login() {
               placeholder="Enter Password..."
             />
           </div>
-          <h1>hi</h1>
-          <Button>Login</Button>
+          <Button fullWidth>Login</Button>
+          <p className='text-center text-gray-800'>Don't have account?<Link to='/register'className='text-sky-600 hover:underline' >Register</Link></p>
         </form>
       </motion.div>
     </div>
