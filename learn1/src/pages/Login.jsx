@@ -5,10 +5,13 @@ import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod'
-import {string, z} from 'zod'
+import {useDispatch} from 'react-redux';
+import {login} from './../redux/slice/authSlice.js'
+import {z} from 'zod'
 
 function Login() {
   const [isEyeClick, setIsEyeClick] = useState(false);
+  const dispatch = useDispatch();
   const handleEyeClick = () => {
     setIsEyeClick(!isEyeClick);
   };
@@ -18,7 +21,7 @@ const loginSchema = z.object({
     .string()
     .min(1, { message: "This field has to be filled." })
     .email("This is not a valid email."),
-    password : z.string().min(4)
+    password : z.string()
   });
   const {
     register,
@@ -32,9 +35,9 @@ const loginSchema = z.object({
   console.log(errors);
 
 
-// console.log(errors)
+
   const onSubmit = (data) =>{
-    console.log(data)
+    dispatch(login(data))
   }
 
 
