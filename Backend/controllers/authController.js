@@ -37,6 +37,18 @@ export const login = async (req, res) => {
   } catch (error) {}
 };
 
+export const verify = async (req, res) => {
+  console.log('verify wali', req.user);
+  if (!req.user) {
+  } else {
+    return res.status(200).json({
+      authenticated: true,
+      id: req.user.id,
+      name: req.user.name,
+    });
+  }
+};
+
 export const register = async (req, res) => {
   try {
     const { name, password, email } = req.body;
