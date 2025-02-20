@@ -3,12 +3,40 @@ import { motion } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Button } from '@mantine/core';
 import { Link } from 'react-router-dom';
+import {useForm} from 'react-hook-form';
+import {zodResolver} from '@hookform/resolvers/zod'
+import {string, z} from 'zod'
 
 function Login() {
   const [isEyeClick, setIsEyeClick] = useState(false);
   const handleEyeClick = () => {
     setIsEyeClick(!isEyeClick);
   };
+
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, { message: "This field has to be filled." })
+    .email("This is not a valid email."),
+    password : z.string().min(4)
+  });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+  });
+
+  console.log(register('email'));
+  console.log(errors);
+
+
+// console.log(errors)
+  const onSubmit = (data) =>{
+    console.log(data)
+  }
+
 
   
 
@@ -21,15 +49,17 @@ function Login() {
         className="w-96 rounded-2xl p-6 shadow-md bg-white"
       >
         <h1 className="text-center text-2xl font-bold mb-4">Welcome Back</h1>
-        <form className="space-y-6 w-full sm:">
+        <form className="space-y-6 w-full sm:" onSubmit={handleSubmit(onSubmit)}>
           <div className="flex gap-2   ">
             <Mail className="text-gray-500" />
             <input
               type="email"
               className="focus:outline-none w-full border-b border-gray-200"
               placeholder="Enter Email..."
+              {...register('email')}
             />
           </div>
+          {errors.email &&<p className='text-sm text-red-500'>{errors.email.message}</p>}
           <div className="flex gap-2 relative ">
             <Lock className="text-gray-500" />
             <div onClick={handleEyeClick} className="absolute right-2">
@@ -40,9 +70,10 @@ function Login() {
               type={isEyeClick ? 'text' : 'password'}
               className="focus:outline-none w-full border-b border-gray-200"
               placeholder="Enter Password..."
+              {...register('password')}
             />
           </div>
-          <Button fullWidth>Login</Button>
+          <Button type='submit' fullWidth>Login</Button>
           <p className='text-center text-gray-800'>Don't have account?<Link to='/register'className='text-sky-600 hover:underline' >Register</Link></p>
         </form>
       </motion.div>
