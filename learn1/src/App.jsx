@@ -4,11 +4,17 @@ import {Routes,Route} from 'react-router-dom'
 import Login from './pages/Login'
 import '@mantine/core/styles.css';
 import Reg from './pages/Reg';
-//import { useSelector, useDispatch } from 'react-redux';
+import { useSelector, useDispatch} from 'react-redux';
 import Preferences from './pages/Preferences';
 import { Toaster } from 'sonner';
-// import { increment } from '../src/redux/slice/counterSlice';
+// import Homepage from './pages/Homepage';
+import ProtectedRoutes from './Componets/ProtectedRoutes';
+import { lazy, Suspense } from 'react';
+import LoadingSpinner from './Componets/LoadingSpinner';
+const Homepage = lazy(()=>import('./pages/Homepage'))
 //import { fetchProduct } from './redux/slice/productSlice';
+
+
 
 function App() {
   // const {loading , products} = useSelector((state)=>state.product)
@@ -18,8 +24,7 @@ function App() {
   //   dispatch(fetchProduct());
   // }, []);
 
-  // const {count} = useSelector((state)=>state.count);
-  //const dispatch = useDispatch() ;
+  
   
   return (
     <div>
@@ -27,13 +32,18 @@ function App() {
 
       
       <Toaster/>
-      <Preferences/>
+      <Suspense fallback={<LoadingSpinner/>}>
       <Routes>
+        <Route element={<ProtectedRoutes/>}>
+        <Route path="/" element={<Homepage/>}/>
+        <Route path="/preferences" element={<Preferences/>} />
+        </Route>
+
+
         <Route path="/login" element={<Login/>}/>
         <Route path="/register" element={<Reg/>}/>
       </Routes>
-      {/* <p>{count}</p>
-      <button onClick={()=> dispatch(increment())}>increment</button> */}
+      </Suspense>
 
     </div>
   )
