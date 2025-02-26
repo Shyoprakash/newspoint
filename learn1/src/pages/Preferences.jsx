@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { CircleCheckBig } from 'lucide-react';
 import { Button } from '@mantine/core';
+import {Slide} from 'react-awesome-reveal'
 // import './preferenc.css'
 
 function Preferences() {
@@ -25,6 +26,7 @@ function Preferences() {
  
   };
   return (
+    <Slide>
     <div className="h-screen bg-gray-100 flex flex-col justify-center items-center">
       <div>
         <h1 className="text-gray-800 font-semibold text-2xl">
@@ -52,6 +54,7 @@ function Preferences() {
         <Button>Save Preferences</Button>
       </div>
     </div>
+    </Slide>
   );
 }
 

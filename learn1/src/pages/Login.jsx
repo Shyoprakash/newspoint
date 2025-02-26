@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
-import { Button } from '@mantine/core';
+import { Button , Loader } from '@mantine/core';
 import { Link } from 'react-router-dom';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod'
@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 
 function Login() {
   const [isEyeClick, setIsEyeClick] = useState(false);
-  const {authenticated,preferences} =useSelector((state)=>state.auth)
+  const {authenticated,preferences,loading} =useSelector((state)=>state.auth)
   const dispatch = useDispatch();
   const navigate =useNavigate()
   const handleEyeClick = () => {
@@ -42,7 +42,7 @@ const loginSchema = z.object({
     resolver: zodResolver(loginSchema),
   });
 
-  // console.log(register('email'));
+  //console.log(register('email'));
   // console.log(errors);
 
 
@@ -87,7 +87,7 @@ const loginSchema = z.object({
               {...register('password')}
             />
           </div>
-          <Button type='submit' fullWidth>Login</Button>
+          <Button type='submit' fullWidth>{loading ? <Loader size={16} color='white'/> : "Login"}</Button>
           <p className='text-center text-gray-800'>Don't have account?<Link to='/register'className='text-sky-600 hover:underline' >Register</Link></p>
         </form>
       </motion.div>

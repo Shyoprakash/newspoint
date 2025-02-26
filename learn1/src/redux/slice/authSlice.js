@@ -39,19 +39,23 @@ export const login = createAsyncThunk(
      
       return {...res.data,...verifyres.data};
     } catch (error) {
-      return rejectWithValue(error);
-
+      if (error.response && error.response.data) {
+        return rejectWithValue(error.response.data.message); // 🔴 Backend error message handle kiya
+      }
+      return rejectWithValue('Something went wrong. Please try again.'); // 🔴 Default error message
     }
   }
 );
 const authSlice = createSlice({
   name: 'auth',
   initialState,
+  error: null,
   reducers : {
     signOut : function(state){
       state.authenticated = false ;
       state.id = null ;
       state.name = null ;
+      state.error = null; 
       removeCookie('isAuthenticated')
       removeCookie('name')
       removeCookie('id')
@@ -61,16 +65,19 @@ const authSlice = createSlice({
     builder
       .addCase(SignUp.pending, (state) => {
         state.loading = true;
+        state.error = null;
       })
       .addCase(SignUp.fulfilled, (state, action) => {
         state.loading = false;
         console.log(action.payload.message);
         toast.success(action.payload.message);
+        
       })
       .addCase(SignUp.rejected, (state, action) => {
         console.log(action.payload);
         state.loading = false;
         toast.error(action.payload.response.data.message);
+        
 
 
       }).addCase(login.pending, (state) => {
@@ -88,82 +95,14 @@ const authSlice = createSlice({
         toast.success(action.payload.message)
 
       }).addCase(login.rejected, (state, action) => {
-        state.loading = false
+        state.loading = false;
+        toast.error(action.payload || 'Login failed. Please try again.');
       })
   },
 });
 
 export default authSlice.reducer;
 export const {signOut} = authSlice.actions
-
-
-
-
-
-
-
-
-
-
-
-
-
-// import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-// import axios from 'axios';
-// import { toast } from 'sonner';
-
-// const initialState = {
-//   loading: false,
-// };
-
-// export const SignUp = createAsyncThunk(
-//   '/register',
-//   async (data, { rejectWithValue }) => {
-//     try {
-//       const res = await axios.post(
-//         `${import.meta.env.VITE_API_URL}/auth/register`,
-//         data
-//       );
-//       return res.data; // ✅ Only serializable data return karo
-//     } catch (error) {
-//       return rejectWithValue({
-//         message: error.message,                 // ✅ String
-//         status: error.response?.status,        // ✅ Number
-//         data: error.response?.data,            // ✅ Object
-//       });
-//     }
-//   }
-// );
-
-// const authSlice = createSlice({
-//   name: 'auth',
-//   initialState,
-//   extraReducers: (builder) => {
-//     builder
-//       .addCase(SignUp.pending, (state) => {
-//         state.loading = true;
-//       })
-//       .addCase(SignUp.fulfilled, (state, action) => {
-//         state.loading = false;
-//         console.log("Success:", action.payload.message);
-//         toast.success(action.payload.message);  // ✅ Success message toast
-//       })
-//       .addCase(SignUp.rejected, (state, action) => {
-//         state.loading = false;
-
-//         // ✅ Safe error handling with fallback
-//         const errorMessage = action.payload?.data?.message || action.payload?.message || "Something went wrong";
-//         console.log("Error:", errorMessage);
-//         toast.error(errorMessage);  // ✅ Clean error toast
-//       });
-//   },
-// });
-
-// export default authSlice.reducer;
-
-
-
-
 
 
 
