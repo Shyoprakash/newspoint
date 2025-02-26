@@ -97,7 +97,7 @@ export const login = async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'User is not registered' });
+      return res.status(404).json({ message: 'User is not registered, please register and try again' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -105,15 +105,9 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Password does not match' });
     }
 
-    const jwtSecret = process.env.JWT_SECRET;
-    if (!jwtSecret) {
-      console.error('❌ JWT_SECRET not found!');
-      return res.status(500).json({ message: 'Server misconfiguration' });
-    }
-
     const token = jwt.sign(
       { id: user._id, name: user.name },
-      jwtSecret,
+      process.env.JWT_SECRET || 'default_secret',
       { expiresIn: '1d' }
     );
 
@@ -127,44 +121,28 @@ export const login = async (req, res) => {
       preferences: user.preferences,
       message: 'Login successful',
     });
-
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ message: 'Server error during login' });
   }
 };
 
-
 export const verify = async (req, res) => {
   try {
-    const token = req.cookies.token; // 🍪 Token cookie se uthaya
-
-    if (!token) {
-      return res.status(401).json({ authenticated: false, message: 'No token provided' });
+    if (!req.user) {
+      return res.status(401).json({ authenticated: false, message: 'User not authenticated' });
     }
 
-    // ✅ JWT token verify karo with proper secret (no fallback)
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    // ✅ Successfully verified
     res.status(200).json({
       authenticated: true,
-      id: decoded.id,
-      name: decoded.name,
+      id: req.user.id,
+      name: req.user.name,
     });
-
   } catch (error) {
     console.error('Verify error:', error);
-
-    // 🔴 Agar token galat ya expired hai toh 403 return karo
-    if (error.name === 'JsonWebTokenError') {
-      return res.status(403).json({ authenticated: false, message: 'Invalid token' });
-    }
-
     res.status(500).json({ message: 'Server error during verification' });
   }
 };
-
 
 export const register = async (req, res) => {
   try {

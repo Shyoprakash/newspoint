@@ -8,7 +8,7 @@ const initialState = {
   authenticated:  getCookie('isAuthenticated') || false,
   name: getCookie('name' )|| null,
   id: getCookie('id') || null,
-  Preferences: []
+  preferences: []
 };
 
 export const SignUp = createAsyncThunk(
