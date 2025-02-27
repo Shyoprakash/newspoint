@@ -3,7 +3,7 @@ import countReducer from './slice/counterSlice.js'
 import colorReducer from './slice/colorSlice.js'
 import productReducer from './slice/productSlice.js'
 import authReducer from './slice/authSlice.js'
-
+import newsReducer from './slice/newsSlice.js'
 const store = configureStore({
     reducer : {
        count : countReducer,

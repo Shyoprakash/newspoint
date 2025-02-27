@@ -11,6 +11,7 @@ import { Toaster } from 'sonner';
 import ProtectedRoutes from './Componets/ProtectedRoutes';
 import { lazy, Suspense } from 'react';
 import LoadingSpinner from './Componets/LoadingSpinner';
+import PreferenceProtectRoute from './Componets/PreferenceProtectRoute';
 const Homepage = lazy(()=>import('./pages/Homepage'))
 //import { fetchProduct } from './redux/slice/productSlice';
 
@@ -36,7 +37,8 @@ function App() {
       <Routes>
         <Route element={<ProtectedRoutes/>}>
         <Route path="/" element={<Homepage/>}/>
-        <Route path="/preferences" element={<Preferences/>} />
+        <Route element={<PreferenceProtectRoute/>} > <Route path="/preferences" element={<Preferences/>} /> </Route>
+        
         </Route>
 
 
