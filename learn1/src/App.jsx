@@ -14,6 +14,7 @@ import PreferenceProtectRoute from './Componets/PreferenceProtectRoute';
 const Homepage = lazy(()=>import('./pages/Homepage'))
 const Profile = lazy(()=> import('./pages/Profile'))
 import Footer from './Componets/Footer';
+import About from './pages/AboutPage';
 
 //import { fetchProduct } from './redux/slice/productSlice';
 
@@ -32,7 +33,6 @@ function App() {
   return (
     <div>
       <Navbar/>
-
       
       <Toaster/>
       <Suspense fallback={<LoadingSpinner/>}>
@@ -44,7 +44,7 @@ function App() {
         
         </Route>
 
-
+        <Route path='/about' element={<About/>}/>
         <Route path="/login" element={<Login/>}/>
         <Route path="/register" element={<Reg/>}/>
       </Routes>
