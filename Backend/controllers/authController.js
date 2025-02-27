@@ -106,7 +106,7 @@ export const login = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, name: user.name },
+      { id: user._id, name: user.name,email : user.email },
       process.env.JWT_SECRET || 'default_secret',
       { expiresIn: '1d' }
     );
@@ -115,6 +115,7 @@ export const login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
+      maxAge : 15*24*60,
     });
 
     res.status(200).json({
@@ -136,6 +137,7 @@ export const verify = async (req, res) => {
     res.status(200).json({
       authenticated: true,
       id: req.user.id,
+      email: req.user.email,
       name: req.user.name,
     });
   } catch (error) {
