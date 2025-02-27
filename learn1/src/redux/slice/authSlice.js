@@ -89,6 +89,7 @@ const authSlice = createSlice({
         state.name = action.payload.name;
         state.id = action.payload.id;
         setCookie('isAuthenticated', action.payload.authenticated);
+        setCookie('email', action.payload.email);
         setCookie('name', action.payload.name);
         setCookie('id', action.payload.id);
         state.preferences = action.payload.preferences

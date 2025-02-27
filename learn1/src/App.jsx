@@ -7,12 +7,14 @@ import Reg from './pages/Reg';
 import { useSelector, useDispatch} from 'react-redux';
 import Preferences from './pages/Preferences';
 import { Toaster } from 'sonner';
-// import Homepage from './pages/Homepage';
 import ProtectedRoutes from './Componets/ProtectedRoutes';
 import { lazy, Suspense } from 'react';
 import LoadingSpinner from './Componets/LoadingSpinner';
 import PreferenceProtectRoute from './Componets/PreferenceProtectRoute';
 const Homepage = lazy(()=>import('./pages/Homepage'))
+const Profile = lazy(()=> import('./pages/Profile'))
+import Footer from './Componets/Footer';
+
 //import { fetchProduct } from './redux/slice/productSlice';
 
 
@@ -36,7 +38,8 @@ function App() {
       <Suspense fallback={<LoadingSpinner/>}>
       <Routes>
         <Route element={<ProtectedRoutes/>}>
-        <Route path="/" element={<Homepage/>}/>
+        <Route path="/home" element={<Homepage/>}/>
+        <Route path="/profile" element={<Profile/>}/>
         <Route element={<PreferenceProtectRoute/>} > <Route path="/preferences" element={<Preferences/>} /> </Route>
         
         </Route>
@@ -46,7 +49,7 @@ function App() {
         <Route path="/register" element={<Reg/>}/>
       </Routes>
       </Suspense>
-
+      <Footer/>
     </div>
   )
 }
