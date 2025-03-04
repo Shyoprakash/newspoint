@@ -14,12 +14,13 @@ function Preferences() {
   const [selectedCategory, setSelectedCategory] = useState([]);
   const dispatch = useDispatch()
   const categories = [
-    'Technology',
-    'Sports',
-    'Health',
-    'Entertainment',
-    'Business',
-    'Politics',
+    "general",
+  "sports",
+  "politics",
+  "business",
+  "entertainment",
+  "health",
+  "science",
   ];
   console.log(selectedCategory);
 
@@ -34,7 +35,7 @@ function Preferences() {
 
   const handleSavePreferences = async() => {
     await dispatch(setPreferences({preferences : selectedCategory}))
-     navigate('/')
+     navigate('/home')
    }
 
   return (

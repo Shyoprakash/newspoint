@@ -1,6 +1,8 @@
 import { removeCookie, setCookie } from '../../utils/utils';
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { auth, googleAuthProvider } from './../../config/Firebase.js';
+import { signInWithPopup } from 'firebase/auth';
 import { getCookie } from '../../utils/utils';
 import { toast } from 'sonner';
 const initialState = {
@@ -46,6 +48,22 @@ export const login = createAsyncThunk(
     }
   }
 );
+
+export const signInWithGoogle = createAsyncThunk('/google-login', async () => {
+  try {
+    const result = await signInWithPopup(auth, googleAuthProvider);
+    const idToken = await result.user.getIdToken();
+    console.log(idToken);
+
+    const res = await axios.post(
+      `${import.meta.env.VITE_API_URL}/auth/google`,
+      { idToken }
+    );
+
+    return res.data;
+  } catch (err) {}
+});
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -101,8 +119,28 @@ const authSlice = createSlice({
         state.loading = false;
         toast.error(action.payload || 'Login failed. Please try again.');
       })
+      .addCase(signInWithGoogle.pending, (state, action) => {
+        // state.loading = true;
+      })
+      .addCase(signInWithGoogle.fulfilled, (state, action) => {
+        state.authenticated = action.payload.authenticated;
+        state.name = action.payload.name;
+        state.id = action.payload.id;
+        setCookie('isAuthenticated', action.payload.authenticated);
+        setCookie('email', action.payload.email);
+        setCookie('name', action.payload.name);
+        setCookie('id', action.payload.id);
+        state.preferences = action.payload.preferences;
+        localStorage.setItem(
+          'preferences',
+          JSON.stringify(action.payload.preferences)
+        );
+        console.log(action.payload);
+        toast.success(action.payload.message);
+      });
   },
 });
+ 
 
 export default authSlice.reducer;
 export const {signOut} = authSlice.actions
