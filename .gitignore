@@ -3,3 +3,4 @@ learn1/node_modules
 Backend/Key/*.json
 
 .env
+Backend/Key/newspoint-ec222-firebase-adminsdk-fbsvc-ef7c83aba3.json
