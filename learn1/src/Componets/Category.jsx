@@ -102,7 +102,7 @@ import ArticleCard from './ArticleCard';
 
 function Category() {
   const [category, setCategory] = useState('general');
-  console.log('Current Category:', category);
+  //console.log('Current Category:', category);
 
   const categories = ['General', 'Sports', 'Politics', 'Business', 'Entertainment', 'Health', 'Science'];
 
@@ -110,7 +110,7 @@ function Category() {
     queryKey: ['category', category],
     queryFn: async ({ queryKey, pageParam = 1 }) => {
       const selectedCategory = queryKey[1];
-      console.log(`Fetching news for category: ${selectedCategory}, page: ${pageParam}`);
+      //console.log(`Fetching news for category: ${selectedCategory}, page: ${pageParam}`);
 
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/news/${selectedCategory}?page=${pageParam}&pageSize=10`
@@ -119,7 +119,6 @@ function Category() {
     },
     getNextPageParam: (lastPage) => lastPage.nextPage,
   });
-
   return (
     <div className="py-12 px-10 max-w-5xl mx-auto">
       <h1 className="text-center space-y-10 my-6 font-bold text-2xl">Categories</h1>

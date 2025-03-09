@@ -44,7 +44,7 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import cron from 'node-cron';
 import admin from 'firebase-admin';
-import serviceAccount from './Key/newspoint-ec222-firebase-adminsdk-fbsvc-ef7c83aba3.json'with { type: "json" };
+import serviceAccount from './Key/newspoint-ec222-firebase-adminsdk-fbsvc-5134074668.json'with { type: "json" };
 
 // ✅ Import Routes
 import userRoutes from './routes/UserRoutes.js';
