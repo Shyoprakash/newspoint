@@ -12,28 +12,31 @@ import {
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import axios from 'axios';
-import { Eye, Bookmark, Sparkles, Copy } from 'lucide-react';
-
+import { Eye, Bookmark, Sparkles, Copy, Share2 } from 'lucide-react';
+import { addBookmarks, removeBookmarks } from '../redux/slice/newsSlice';
+import { useDispatch } from 'react-redux';
 const ArticleCard = ({ article, category }) => {
   const [opened, setOpened] = useState(false);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [summary, setSummary] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
+  const [bookmarks, setBookmarks] = useState(true);
 
+  const dispatch = useDispatch();
   const handleSummarize = async () => {
     setOpened(true);
     setIsLoading(true);
-    setError(null); // ✅ Reset error before request
-
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/ai/summarize`, // ✅ Fixed API route
-        { url: article.url }
+        `${import.meta.env.VITE_API_URL}/api/ai/summarize`,
+        {
+          url: article.url,
+        }
       );
       setSummary(res.data.summary);
     } catch (error) {
-      setError('Failed to generate summary. Try again.');
+      setError(error.message);
     }
     setIsLoading(false);
   };
@@ -44,34 +47,91 @@ const ArticleCard = ({ article, category }) => {
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
+  const toogleBookmarks = (n) => {
+    console.log(n);
+    const data = {
+      article: {
+        articleId: n._id,
+        title: n.title,
+        source: n.source.name,
+        url: n.url,
+        imageUrl: n.urlToImage,
+        publishedAt: n.publishedAt,
+      },
+    };
+    if (bookmarks) {
+      dispatch(addBookmarks(data));
+    } else {
+      dispatch(removeBookmarks(n.url));
+    }
+
+    setBookmarks(!bookmarks);
+  };
+
   return (
-    <Card shadow="sm" p="lg" radius="md" withBorder className="flex flex-row gap-6">
+    <Card
+      shadow="sm"
+      p="lg"
+      radius="md"
+      withBorder
+      className="flex flex-row gap-6"
+    >
       {article.urlToImage && (
-        <Image src={article.urlToImage} alt={article.title} radius="md" className="object-cover" />
+        <Image
+          src={article.urlToImage}
+          alt={article.title}
+          h={200}
+          w="auto"
+          fit="contain"
+          radius="md"
+          className="object-cover"
+        />
       )}
       <div className="flex-1">
-        <Badge color="yellow" variant="light">{category}</Badge>
+        <Badge color="yellow" variant="light">
+          {category}
+        </Badge>
         <h2
           className="cursor-pointer text-xl hover:text-amber-500 hover:underline mt-2"
           onClick={() => window.open(article.url, '_blank')}
         >
           {article.title}
         </h2>
-        <Text size="sm" color="gray" mt="sm">{article.description}</Text>
+        <Text size="sm" color="gray" mt="sm">
+          {article.description}
+        </Text>
 
         <Group mt="md" spacing="xs">
           <Flex align="center" gap="xs">
             <Eye size={16} />
-            <Text size="sm">{article.views || Math.floor(Math.random() * 500)}</Text>
+            <Text size="sm">
+              {article.views || Math.floor(Math.random() * 500)}
+            </Text>
           </Flex>
 
-          <Tooltip label="Bookmark this article" withArrow position="top">
-            <ActionIcon variant="outline" size="sm" color="blue">
-              <Bookmark size={18} />
+          <Tooltip
+            label={bookmarks ? 'Bookmark this article' : 'Remove Bookmark'}
+            withArrow
+            position="top"
+          >
+            <ActionIcon
+              onClick={() => toogleBookmarks(article)}
+              variant="outline"
+              size="sm"
+              color={bookmarks ? 'blue' : 'red'}
+            >
+              <Bookmark size={18} fill={bookmarks ? null : 'currentColor'} />
             </ActionIcon>
           </Tooltip>
 
-          <Popover opened={opened} onChange={setOpened} width={isLoading ? 350 : 500} position="bottom" withArrow shadow="md">
+          <Popover
+            opened={opened}
+            onChange={setOpened}
+            width={isLoading ? 350 : 500}
+            position="bottom"
+            withArrow
+            shadow="md"
+          >
             <Popover.Target>
               <Tooltip label="Generate Summary" withArrow position="top">
                 <ActionIcon
@@ -80,7 +140,6 @@ const ArticleCard = ({ article, category }) => {
                   size="md"
                   color="yellow"
                   gradient={{ from: 'blue', to: 'cyan', deg: 330 }}
-                  disabled={isLoading} // ✅ Disable button when loading
                 >
                   <Sparkles size={18} />
                 </ActionIcon>
@@ -96,13 +155,15 @@ const ArticleCard = ({ article, category }) => {
                   >
                     <Sparkles size={30} className="text-sky-500" />
                   </motion.span>
-                  <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-gray-500"
-                    transition={{ repeat: Infinity, duration: 1.5 }}>
+                  <motion.span
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-gray-500"
+                    transition={{ repeat: Infinity, duration: 1.5 }}
+                  >
                     Generating...
                   </motion.span>
                 </Flex>
-              ) : error ? (
-                <Text color="red">{error}</Text> // ✅ Show error if request fails
               ) : (
                 <motion.div>
                   {summary.split(' ').map((word, index) => (
@@ -117,8 +178,17 @@ const ArticleCard = ({ article, category }) => {
                     </motion.span>
                   ))}
                   <Flex justify="flex-end" mt="sm">
-                    <Tooltip label={copySuccess ? 'Copied!' : 'Copy summary'} withArrow position="top">
-                      <ActionIcon variant="outline" size="sm" color="blue" onClick={handleCopy}>
+                    <Tooltip
+                      label={copySuccess ? 'Copied!' : 'Copy summary'}
+                      withArrow
+                      position="top"
+                    >
+                      <ActionIcon
+                        variant="outline"
+                        size="sm"
+                        color="blue"
+                        onClick={handleCopy}
+                      >
                         <Copy size={18} />
                       </ActionIcon>
                     </Tooltip>

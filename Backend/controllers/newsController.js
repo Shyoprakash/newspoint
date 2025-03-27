@@ -1,79 +1,20 @@
-// import User from '../model/User.js';
-// import axios from 'axios';
-// export const Preferences = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { preferences } = req.body;
-
-//     const user = await User.findById(id);
-//     console.log(user);
-//     // console.log([...preferences]);
-//     console.log(user.preferences);
-//     user.preferences = [...user.preferences, ...preferences];
-//     await user.save();
-
-//     res.status(200).json({
-//       message: 'preferences save successfully',
-//     });
-//   } catch (error) {
-//     res.status(500).json({
-//       message: error.message,
-//     });
-//   }
-// };
-
-// export const fetchNewsByCategory = async (req, res) => {
-//   try {
-//     const { category } = req.params;
-//     const { page = 1 } = req.query;
-//     const pageSize = 10;
-
-//     const response = await axios.get(
-//       `https://newsapi.org/v2/top-headlines?category=${category}&language=en&pageSize=${pageSize}&page=${page}&apiKey=${process.env.NEWS_API_KEY}`
-//     );
-
-//     if (!response.data.articles.length) {
-//       return res
-//         .status(404)
-//         .json({ message: 'No news found for this category.' });
-//     }
-
-//     res.status(200).json({
-//       news: response.data.articles,
-//       nextPage:
-//         response.data.articles.length === pageSize ? Number(page) + 1 : null,
-//     });
-//   } catch (error) {
-//     console.error(
-//       'Error fetching news:',
-//       error.response?.data || error.message
-//     );
-//     res.status(500).json({ message: 'Internal server error' });
-//   }
-// };
-
-
-
-
-
 import User from '../model/User.js';
 import axios from 'axios';
-import News from '../model/News.js'; // 🔴 Import MongoDB Model
-
+import News from '../model/News.js';
 export const Preferences = async (req, res) => {
   try {
     const { id } = req.params;
     const { preferences } = req.body;
 
     const user = await User.findById(id);
-    console.log(user);
-    console.log(user.preferences);
-
+    // console.log(user);
+    // console.log([...preferences]);
+    // console.log(user.preferences);
     user.preferences = [...user.preferences, ...preferences];
     await user.save();
 
     res.status(200).json({
-      message: 'Preferences saved successfully',
+      message: 'preferences save successfully',
     });
   } catch (error) {
     res.status(500).json({
@@ -81,107 +22,70 @@ export const Preferences = async (req, res) => {
     });
   }
 };
+
 export const fetchNewsByCategory = async (req, res) => {
   try {
     const { category } = req.params;
     const { page = 1 } = req.query;
     const pageSize = 10;
 
-    const totalNews = await News.countDocuments({ category });
-    const cachedNews = await News.find({ category })
-      .sort({ publishedAt: -1 })
-      .skip((page - 1) * pageSize)
-      .limit(pageSize);
-
-    const nextPage = page * pageSize < totalNews ? Number(page) + 1 : null;
-
-    if (cachedNews.length) {
-      return res.status(200).json({ news: cachedNews, nextPage });
-    }
-
-    // ✅ Agar API ka rate limit exceed ho jaye to cached news dikhao
     const response = await axios.get(
       `https://newsapi.org/v2/top-headlines?category=${category}&language=en&pageSize=${pageSize}&page=${page}&apiKey=${process.env.NEWS_API_KEY}`
     );
 
     if (!response.data.articles.length) {
-      return res.status(404).json({ message: "No news found for this category." });
+      return res
+        .status(404)
+        .json({ message: 'No news found for this category.' });
     }
 
     res.status(200).json({
       news: response.data.articles,
-      nextPage: response.data.articles.length === pageSize ? Number(page) + 1 : null,
+      nextPage:
+        response.data.articles.length === pageSize ? Number(page) + 1 : null,
     });
-
   } catch (error) {
-    console.error("Error fetching news:", error.response?.data || error.message);
-
-    // ✅ `category` ko yahan dubara define karo
-    const { category } = req.params;
-
-    if (error.response?.status === 429) {
-      console.log("⚠️ Rate Limit Exceeded! Showing cached news...");
-      const fallbackNews = await News.find({ category })
-        .sort({ publishedAt: -1 })
-        .limit(10);
-
-      return res.status(200).json({ news: fallbackNews, nextPage: null });
-    }
-
-    res.status(500).json({ message: "Internal server error" });
+    console.error(
+      'Error fetching news:',
+      error.response?.data || error.message
+    );
+    res.status(500).json({ message: 'Internal server error' });
   }
 };
 
+export const fetchAllNews = async (req, res) => {
+  console.log(req.query);
+  const { limit = 20, page=1, keyword } = req.query;
+  console.log(keyword)
+  const query = keyword
+    ? {
+        $or: [
+          { title: { $regex: keyword, $options: 'i' } },
+          { content: { $regex: keyword, $options: 'i' } },
+          { description: { $regex: keyword, $options: 'i' } },
+          { author: { $regex: keyword, $options: 'i' } },
+          { url: { $regex: keyword, $options: 'i' } },
+        ],
+      }
+    : {};
+  try {
+    const news = await News.find(query)
+      .sort({ createdAt: -1 })
+      .limit(Number(limit))
+      .skip((page - 1) * limit);
 
+    if (!news) {
+      return res.status(400).json({
+        message: 'No news found',
+      });
+    }
+    const totalCount = await News.countDocuments(query);
 
-
-// export const fetchNewsByCategory = async (req, res) => {
-//   try {
-//     const { category } = req.params;
-//     const { page = 1 } = req.query;
-//     const pageSize = 10;
-
-//     // Pehle database se news fetch karo
-//     const cachedNews = await News.find({ category })
-//       .sort({ publishedAt: -1 })
-//       .limit(pageSize);
-
-//     // Agar database me news milti hai to wahi bhejo
-//     if (cachedNews.length) {
-//       return res.status(200).json({ news: cachedNews, nextPage: null });
-//     }
-
-//     // Agar database me nahi mili to API se fetch karo
-//     const response = await axios.get(
-//       `https://newsapi.org/v2/top-headlines?category=${category}&language=en&pageSize=${pageSize}&page=${page}&apiKey=${process.env.NEWS_API_KEY}`
-//     );
-
-//     if (!response.data.articles.length) {
-//       return res.status(404).json({ message: "No news found for this category." });
-//     }
-
-//     res.status(200).json({
-//       news: response.data.articles,
-//       nextPage: response.data.articles.length === pageSize ? Number(page) + 1 : null,
-//     });
-
-//   } catch (error) {
-//     console.error("Error fetching news:", error.response?.data || error.message);
-
-//     // ✅ Fix: `category` ko req.params se access karo
-//     const { category } = req.params; 
-
-//     // Rate limit error aane par cached news show karo
-//     if (error.response?.status === 429) {
-//       console.log("⚠️ Rate Limit Exceeded! Showing cached news...");
-//       const fallbackNews = await News.find({ category })
-//         .sort({ publishedAt: -1 })
-//         .limit(10);
-
-//       return res.status(200).json({ news: fallbackNews, nextPage: null });
-//     }
-
-//     res.status(500).json({ message: "Internal server error" });
-//   }
-// };
-
+    res.status(200).json({
+      totalCount,
+      totalPages: Math.ceil(totalCount / limit),
+      length: news.length,
+      data: news,
+    });
+  } catch (error) {}
+};

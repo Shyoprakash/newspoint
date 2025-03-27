@@ -1,15 +1,15 @@
-import { configureStore } from "@reduxjs/toolkit";
-import countReducer from './slice/counterSlice.js'
-import colorReducer from './slice/colorSlice.js'
-import productReducer from './slice/productSlice.js'
+import { configureStore } from "@reduxjs/toolkit"; 
+import loadingReducer from './slice/LoadingSlice.js'
 import authReducer from './slice/authSlice.js'
 import newsReducer from './slice/newsSlice.js'
+//import summaryReducer from './slice/SummarySlice.js'
 const store = configureStore({
     reducer : {
-       count : countReducer,
-       color : colorReducer,
-       product : productReducer,
-       auth : authReducer
+     laoding : loadingReducer,
+     auth : authReducer,
+     news : newsReducer,
+    //  summaries : summaryReducer
+
     }
 })
 
