@@ -29,12 +29,6 @@ function NewsPage() {
   }, [currentPage]);
 
   const handleAddHistory = (n) => {
-    //    articleId: String,
-    // title: String,
-    // source: String,
-    // url: String,
-    // imageUrl: String,
-    // publishedAt: Date,
     const data = {
       article: {
         articleId: n._id,

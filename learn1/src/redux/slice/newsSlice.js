@@ -63,6 +63,7 @@ export const addReadingHistory = createAsyncThunk(
   }
 );
 
+
 export const getReadingHistory = createAsyncThunk(
   '/getreading-history',
   async (_, { rejectWithValue }) => {
@@ -74,6 +75,22 @@ export const getReadingHistory = createAsyncThunk(
       return res.data;
     } catch (error) {
       return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const clearReadingHistory = createAsyncThunk(
+  '/clearReadingHistory',
+  async (_, { rejectWithValue }) => {
+    const id = getCookie('id');
+    try {
+      const res = await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/${id}/reading-history`,
+        { withCredentials: true }
+      );
+      return res.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || 'Failed to clear reading history');
     }
   }
 );
@@ -101,7 +118,7 @@ export const removeBookmarks = createAsyncThunk(
     try {
       const res = await axios.delete(
         `${import.meta.env.VITE_API_URL}/api/${id}/bookmarks`,
-        { articleUrl }
+        { data: { articleUrl } }  // ✅ put inside `data`
       );
       return res.data;
     } catch (error) {
@@ -117,7 +134,7 @@ export const getBookmarks = createAsyncThunk(
     const id = getCookie('id');
     try {
       const res = await axios.get(
-        `${import.meta.env.VITE_API_URL}/api/${id}/bookmarks`
+        `${import.meta.env.VITE_API_URL}/api/bookmarks/${id}`
       );
       return res.data;
     } catch (error) {
@@ -163,7 +180,7 @@ const newsSlice = createSlice({
         console.log(action.payload);
       })
       .addCase(getReadingHistory.pending, (state) => {
-        state.loading = true;
+        state.loading = false;
       })
       .addCase(getReadingHistory.fulfilled, (state, action) => {
         console.log(action.payload);
@@ -171,7 +188,19 @@ const newsSlice = createSlice({
       })
       .addCase(getReadingHistory.rejected, (state, action) => {
         console.log(action.payload);
+      }).addCase(clearReadingHistory.pending, (state) => {
+        state.loading = true;
       })
+      .addCase(clearReadingHistory.fulfilled, (state, action) => {
+        state.readingHistory = []; // Clear from state
+        state.loading = false;
+      })
+      .addCase(clearReadingHistory.rejected, (state, action) => {
+        console.error("Error clearing reading history:", action.payload);
+        state.error = action.payload;
+        state.loading = false;
+      })
+      
       .addCase(addBookmarks.pending, (state) => {
         state.loading = true;
       })
