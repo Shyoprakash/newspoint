@@ -1,7 +1,17 @@
-Backend/node_modules
-learn1/node_modules
-Backend/Key/*.json
+# Ignore node_modules folders
+Backend/node_modules/
+learn1/node_modules/
 
+# Ignore environment files
 Backend/.env
 learn1/.env
-Backend/Key/newspoint-ec222-firebase-adminsdk-fbsvc-ef7c83aba3.json
+
+# Ignore Firebase keys or any JSON credentials
+Backend/Key/*.json
+
+# Optional: Ignore logs
+*.log
+
+# Optional: Ignore system files
+.DS_Store
+Thumbs.db
