@@ -1,4 +1,3 @@
-
 import {
   Avatar,
   Tabs,
@@ -8,36 +7,27 @@ import {
   Card,
   Group,
   Badge,
+  Divider,
+  Menu,
 } from '@mantine/core';
 import { getCookie } from '../utils/utils';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  getBookmarks,
-  getReadingHistory,
-  clearReadingHistory, // ✅ IMPORT
-} from '../redux/slice/newsSlice';
+import { getReadingHistory } from '../redux/slice/newsSlice';
+import { getBookmarks } from '../redux/slice/bookmarkSlice';
+import { Delete, DeleteIcon, EllipsisVertical, Trash } from 'lucide-react';
 import List from '../Componets/List';
-
 const Profile = () => {
-  const { readingHistory, bookmarks } = useSelector((state) => state.news);
+  const [bookmarksCount, setBookmarksCount] = useState(5);
+  const [readingHistoryCount, setReadingHistoryCount] = useState(12);
+  const { readingHistory } = useSelector((state) => state.news);
+const { bookmarks, loading } = useSelector((state) => state.bookmarks);
   const dispatch = useDispatch();
-
   useEffect(() => {
     dispatch(getReadingHistory());
     dispatch(getBookmarks());
-  }, [dispatch]);
-
-  const handleClearHistory = () => {
-    dispatch(clearReadingHistory());
-  };
-
-  // Filter valid reading history (has title and url)
-  const validReadingHistory = readingHistory.filter(
-    (item) => item.title && item.url
-  );
-
+  }, []);
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -83,7 +73,8 @@ const Profile = () => {
               transition={{ delay: 0.5, duration: 0.4, ease: 'easeOut' }}
             >
               <Badge color="green" size="lg">
-                📖 Reading History: {readingHistory.length}
+                📖 Reading History:{' '}
+                {readingHistory.length > 0 ? readingHistory.length : 0}
               </Badge>
             </motion.div>
           </Group>
@@ -110,11 +101,11 @@ const Profile = () => {
               <Tabs.Tab value="liked">❤️ Liked News</Tabs.Tab>
               <Tabs.Tab value="ai-news">🤖 AI Recommendations</Tabs.Tab>
               <Tabs.Tab value="preferences">⚙ Preferences</Tabs.Tab>
-              <Tabs.Tab value="reading-history">📖 Reading History</Tabs.Tab>
+              <Tabs.Tab value="reading-history">⚙ Reading History</Tabs.Tab>
             </Tabs.List>
 
             <Tabs.Panel value="bookmarks" className="p-4">
-              <List data={bookmarks} />
+              <List items={bookmarks} type="bookmark" />
             </Tabs.Panel>
 
             <Tabs.Panel value="liked" className="p-4">
@@ -130,25 +121,8 @@ const Profile = () => {
             <Tabs.Panel value="preferences" className="p-4">
               <Text className="text-gray-700">No preferences set.</Text>
             </Tabs.Panel>
-
-            <Tabs.Panel value="reading-history" className="p-4 space-y-4">
-              {validReadingHistory.length > 0 ? (
-                <>
-                  <Button
-                    color="red"
-                    variant="light"
-                    onClick={handleClearHistory}
-                    className="mb-4"
-                  >
-                    Clear Reading History
-                  </Button>
-                  <List data={validReadingHistory} />
-                </>
-              ) : (
-                <Text className="text-gray-600">
-                  No valid reading history available.
-                </Text>
-              )}
+            <Tabs.Panel value="reading-history" className="p-4">
+            <List items={readingHistory} type="history" />
             </Tabs.Panel>
           </Tabs>
         </motion.div>
@@ -159,3 +133,9 @@ const Profile = () => {
 
 export default Profile;
 
+
+
+
+
+
+  

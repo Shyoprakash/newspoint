@@ -12,11 +12,13 @@ import Footer from './Componets/Footer';
 import About from './pages/AboutPage';
 import NewsPage from './pages/NewsPage';
 import Preferences from './pages/Preferences';
+import Word from './pages/Word';
 
 // 🆕 Lazy load ReadingHistory
 const Homepage = lazy(() => import('./pages/Homepage'));
 const Profile = lazy(() => import('./pages/Profile'));
-const ReadingHistory = lazy(() => import('./pages/ReadingHistory')); // 🆕
+const ReadingHistory = lazy(() => import('./pages/ReadingHistory'));
+const Bookmarks = lazy(() => import('./pages/Bookmarks'));
 
 function App() {
   return (
@@ -33,6 +35,10 @@ function App() {
 
             {/* 🆕 Route for Reading History */}
             <Route path="/reading-history" element={<ReadingHistory />} /> 
+            <Route path="/bookmarks" element={<Bookmarks />} />
+
+{/* ✅ World route added */}
+<Route path="/world" element={<Word />} />
 
             <Route element={<PreferenceProtectRoute />}>
               <Route path="/preferences" element={<Preferences />} />

@@ -10,6 +10,7 @@ const BookmarkSchema = new mongoose.Schema({
   addedAt: { type: Date, default: Date.now }, 
 });
 
+
 const ReadingHistorySchema = new mongoose.Schema({
   articleId: String,
   title: String,

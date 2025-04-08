@@ -1,7 +1,7 @@
 import User from '../model/User.js';
 
 export const addBookmark = async (req, res) => {
-
+  console.log('hello');
   try {
     const { article } = req.body;
     console.log(article);
@@ -37,11 +37,12 @@ export const getBookmarks = async (req, res) => {
 
 export const removeBookmark = async (req, res) => {
   try {
-    const { id, articleId } = req.params;
+    const { id } = req.params;
+    const {articleUrl} = req.body
     const user = await User.findById(id);
     if (!user) res.status(404).json({ message: 'User not found' });
     user.bookmarks = user.bookmarks.filter(
-      (b) => b._id.toString() !== articleId
+      (b) => b.url !== articleUrl
     );
     await user.save();
     res.status(200).json({

@@ -1,38 +1,62 @@
-import React from 'react'
-import { Divider, Menu } from '@mantine/core'
-import { EllipsisVertical , Trash } from 'lucide-react'
-function List({data}) {
+
+import { useDispatch } from 'react-redux';
+import { removeBookmarks } from '../redux/slice/bookmarkSlice';
+import { Card, Text, Menu, Divider } from '@mantine/core';
+import { EllipsisVertical, Trash } from 'lucide-react';
+
+const List = ({ items = [], type = 'bookmark' }) => {
+  const dispatch = useDispatch();
+
+  const handleDelete = (articleUrl) => {
+    if (type === 'bookmark') {
+      dispatch(removeBookmarks(articleUrl));
+    }
+  };
+
+  if (!items.length) {
+    return (
+      <Text size="sm" color="dimmed" className="italic">
+        No {type === 'bookmark' ? 'bookmarks' : 'reading history'} found.
+      </Text>
+    );
+  }
+
   return (
-    <div>
-        {data.length > 0
-                ? data.map((rh) => (
-                    <>
-                      <div className="flex items-center">
-                        <Menu>
-                          <Menu.Target>
-                            <EllipsisVertical className="cursor-pointer" />
-                          </Menu.Target>
-                          <Menu.Dropdown>
-                            <Menu.Item color="red" leftSection={<Trash />}>
-                              Delete
-                            </Menu.Item>
-                          </Menu.Dropdown>
-                        </Menu>
+    <div className="space-y-2">
+      {items.map((item, index) => (
+        <div key={index}>
+          <div className="flex justify-between items-start">
+            <a
+              href={item.url}
+              className="flex-1 p-2 hover:underline transition-all"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {item.title}
+            </a>
 
-                        <a
-                          href={rh.url}
-                          className="block p-3 hover:underline transition-all duration-300"
-                          target="_blank"
-                        >
-                          {rh.title}
-                        </a>
-                      </div>
-                      <Divider />
-                    </>
-                  ))
-                : null}
+            {type === 'bookmark' && (
+              <Menu>
+                <Menu.Target>
+                  <EllipsisVertical className="cursor-pointer mt-1" size={18} />
+                </Menu.Target>
+                <Menu.Dropdown>
+                  <Menu.Item
+                    color="red"
+                    leftSection={<Trash size={16} />}
+                    onClick={() => handleDelete(item.url)}
+                  >
+                    Delete
+                  </Menu.Item>
+                </Menu.Dropdown>
+              </Menu>
+            )}
+          </div>
+          <Divider />
+        </div>
+      ))}
     </div>
-  )
-}
+  );
+};
 
-export default List
+export default List;

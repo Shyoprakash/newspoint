@@ -1,3 +1,5 @@
+
+
 import {
   Card,
   Image,
@@ -9,34 +11,55 @@ import {
   Popover,
   Tooltip,
 } from '@mantine/core';
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import axios from 'axios';
-import { Eye, Bookmark, Sparkles, Copy, Share2 } from 'lucide-react';
-import { addBookmarks, removeBookmarks } from '../redux/slice/newsSlice';
-import { useDispatch } from 'react-redux';
+import { Eye, Bookmark, Sparkles, Copy } from 'lucide-react';
+import { addBookmarks, removeBookmarks } from '../redux/slice/bookmarkSlice';
+
 const ArticleCard = ({ article, category }) => {
+  const dispatch = useDispatch();
+  const { bookmarks } = useSelector((state) => state.bookmarks);
+
+  const isBookmarked = bookmarks.some((item) => item.url === article.url);
+
   const [opened, setOpened] = useState(false);
-  const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [summary, setSummary] = useState('');
   const [copySuccess, setCopySuccess] = useState(false);
-  const [bookmarks, setBookmarks] = useState(true);
+  const [error, setError] = useState(null);
 
-  const dispatch = useDispatch();
+  const handleBookmark = () => {
+    const data = {
+      article: {
+        articleId: article._id,
+        title: article.title,
+        source: article.source?.name,
+        url: article.url,
+        imageUrl: article.urlToImage,
+        publishedAt: article.publishedAt,
+      },
+    };
+
+    if (isBookmarked) {
+      dispatch(removeBookmarks(article.url));
+    } else {
+      dispatch(addBookmarks(data));
+    }
+  };
+
   const handleSummarize = async () => {
     setOpened(true);
     setIsLoading(true);
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/ai/summarize`,
-        {
-          url: article.url,
-        }
+        `${import.meta.env.VITE_API_URL}/api/summarize`,
+        { url: article.url }
       );
       setSummary(res.data.summary);
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err.message);
     }
     setIsLoading(false);
   };
@@ -47,35 +70,8 @@ const ArticleCard = ({ article, category }) => {
     setTimeout(() => setCopySuccess(false), 2000);
   };
 
-  const toogleBookmarks = (n) => {
-    console.log(n);
-    const data = {
-      article: {
-        articleId: n._id,
-        title: n.title,
-        source: n.source.name,
-        url: n.url,
-        imageUrl: n.urlToImage,
-        publishedAt: n.publishedAt,
-      },
-    };
-    if (bookmarks) {
-      dispatch(addBookmarks(data));
-    } else {
-      dispatch(removeBookmarks(n.url));
-    }
-
-    setBookmarks(!bookmarks);
-  };
-
   return (
-    <Card
-      shadow="sm"
-      p="lg"
-      radius="md"
-      withBorder
-      className="flex flex-row gap-6"
-    >
+    <Card shadow="sm" p="lg" radius="md" withBorder className="flex flex-row gap-6">
       {article.urlToImage && (
         <Image
           src={article.urlToImage}
@@ -87,16 +83,21 @@ const ArticleCard = ({ article, category }) => {
           className="object-cover"
         />
       )}
+
       <div className="flex-1">
-        <Badge color="yellow" variant="light">
-          {category}
-        </Badge>
+        {category && (
+          <Badge color="yellow" variant="light">
+            {category}
+          </Badge>
+        )}
+
         <h2
           className="cursor-pointer text-xl hover:text-amber-500 hover:underline mt-2"
           onClick={() => window.open(article.url, '_blank')}
         >
           {article.title}
         </h2>
+
         <Text size="sm" color="gray" mt="sm">
           {article.description}
         </Text>
@@ -104,23 +105,21 @@ const ArticleCard = ({ article, category }) => {
         <Group mt="md" spacing="xs">
           <Flex align="center" gap="xs">
             <Eye size={16} />
-            <Text size="sm">
-              {article.views || Math.floor(Math.random() * 500)}
-            </Text>
+            <Text size="sm">{article.views || Math.floor(Math.random() * 500)}</Text>
           </Flex>
 
           <Tooltip
-            label={bookmarks ? 'Bookmark this article' : 'Remove Bookmark'}
+            label={isBookmarked ? 'Remove Bookmark' : 'Bookmark this article'}
             withArrow
             position="top"
           >
             <ActionIcon
-              onClick={() => toogleBookmarks(article)}
+              onClick={handleBookmark}
               variant="outline"
               size="sm"
-              color={bookmarks ? 'blue' : 'red'}
+              color={isBookmarked ? 'red' : 'blue'}
             >
-              <Bookmark size={18} fill={bookmarks ? null : 'currentColor'} />
+              <Bookmark size={18} fill={isBookmarked ? 'currentColor' : 'none'} />
             </ActionIcon>
           </Tooltip>
 
@@ -145,6 +144,7 @@ const ArticleCard = ({ article, category }) => {
                 </ActionIcon>
               </Tooltip>
             </Popover.Target>
+
             <Popover.Dropdown style={{ minHeight: isLoading ? 150 : 'auto' }}>
               {isLoading ? (
                 <Flex align="center" justify="center" gap="sm">
