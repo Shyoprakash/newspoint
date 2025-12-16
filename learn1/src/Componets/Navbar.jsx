@@ -104,8 +104,8 @@ function Navbar() {
         >
           <ul className="space-y-4 text-center">
             {[
-              { name: 'Home', path: '/' },
-              { name: 'news', path: '/news' },
+              { name: 'Home', path: '/home' },
+              { name: 'News', path: '/news' },
               { name: 'world', path: '/world' },
               { name: 'About', path: '/about' },
             ].map((item) => (

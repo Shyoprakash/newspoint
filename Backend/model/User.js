@@ -30,6 +30,9 @@ const UserSchema = new mongoose.Schema({
   readingHistory: [ReadingHistorySchema], 
 });
 
+
+
+
 const User = mongoose.model('User', UserSchema)
 
 export default User

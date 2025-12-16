@@ -53,7 +53,7 @@ export const signInWithGoogle = createAsyncThunk('/google-login', async () => {
   try {
     const result = await signInWithPopup(auth, googleAuthProvider);
     const idToken = await result.user.getIdToken();
-    console.log(idToken);
+    // console.log(idToken);
 
     const res = await axios.post(
       `${import.meta.env.VITE_API_URL}/auth/google`,
@@ -104,6 +104,7 @@ const authSlice = createSlice({
       }).addCase(login.fulfilled, (state, action) => {
         state.loading = false;
         state.authenticated = action.payload.authenticated;
+        
         state.name = action.payload.name;
         state.id = action.payload.id;
         setCookie('isAuthenticated', action.payload.authenticated);

@@ -7,11 +7,14 @@ import { Loader } from '@mantine/core';
 import { useDispatch, useSelector } from 'react-redux';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useNavigate } from "react-router-dom";
+
+
 const Register = () => {
   const dispatch = useDispatch();
   const { loading } = useSelector((state) => state.auth);
 
-
+  const navigate = useNavigate();
 const passwordSchema = z.string().min(8,{message: 'Password should be at least 8 character long' }).superRefine((value,ctx)=>{
   console.log(value)
   if(!/[A-Z]/.test(value)){
@@ -58,9 +61,13 @@ const passwordSchema = z.string().min(8,{message: 'Password should be at least 8
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
     console.log(data);
-    dispatch(SignUp(data));
+    const res = await dispatch(SignUp(data));
+  
+  if (res.meta.requestStatus === "fulfilled") {
+    navigate("/login");
+  }
   };
 //   console.log(errors.confirmPassword);
   return (

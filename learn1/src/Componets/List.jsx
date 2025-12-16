@@ -1,7 +1,6 @@
-
 import { useDispatch } from 'react-redux';
 import { removeBookmarks } from '../redux/slice/bookmarkSlice';
-import { Card, Text, Menu, Divider } from '@mantine/core';
+import { Text, Menu, Divider } from '@mantine/core';
 import { EllipsisVertical, Trash } from 'lucide-react';
 
 const List = ({ items = [], type = 'bookmark' }) => {
@@ -23,8 +22,8 @@ const List = ({ items = [], type = 'bookmark' }) => {
 
   return (
     <div className="space-y-2">
-      {items.map((item, index) => (
-        <div key={index}>
+      {items.map((item) => (
+        <div key={item.url}>
           <div className="flex justify-between items-start">
             <a
               href={item.url}
@@ -38,7 +37,11 @@ const List = ({ items = [], type = 'bookmark' }) => {
             {type === 'bookmark' && (
               <Menu>
                 <Menu.Target>
-                  <EllipsisVertical className="cursor-pointer mt-1" size={18} />
+                  <EllipsisVertical
+                    className="cursor-pointer mt-1"
+                    size={18}
+                    aria-label="Options"
+                  />
                 </Menu.Target>
                 <Menu.Dropdown>
                   <Menu.Item

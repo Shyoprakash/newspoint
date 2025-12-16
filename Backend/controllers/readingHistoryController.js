@@ -24,6 +24,26 @@ export const clearReadingHistory = async (req, res) => {
   } catch (error) {}
 };
 
+export const deleteSingleReadingHistory = async (req, res) => {
+  try {
+    const { id, historyId } = req.params;
+
+    const user = await User.findById(id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.readingHistory = user.readingHistory.filter(
+      (item) => item._id.toString() !== historyId
+    );
+
+    await user.save();
+
+    res.status(200).json({ message: "History item deleted", historyId });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+
 export const addReadingHistory = async (req, res) => {
   try {
     console.log(req.body)

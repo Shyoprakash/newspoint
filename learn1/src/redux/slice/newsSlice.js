@@ -1,6 +1,6 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { getCookie } from '../../utils/utils';
-import axios from 'axios';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { getCookie } from "../../utils/utils";
+import axios from "axios";
 
 const initialState = {
   loading: false,
@@ -15,9 +15,9 @@ const initialState = {
 };
 
 export const setPreferences = createAsyncThunk(
-  'preferences/setPreferences',
+  "preferences/setPreferences",
   async (data, { rejectWithValue }) => {
-    const id = getCookie('id');
+    const id = getCookie("id");
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/preferences/${id}`,
@@ -25,15 +25,15 @@ export const setPreferences = createAsyncThunk(
       );
       return res.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Something went wrong');
+      return rejectWithValue(error.response?.data || "Something went wrong");
     }
   }
 );
 
 export const fetchAllNews = createAsyncThunk(
-  '/fetchallnews',
+  "/fetchallnews",
   async ({ currentPage, search }, { rejectWithValue }) => {
-    console.log(search);
+    // console.log(search);
     try {
       const response = await axios.get(
         `${
@@ -42,15 +42,15 @@ export const fetchAllNews = createAsyncThunk(
       );
       return response.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data || 'Something went wrong');
+      return rejectWithValue(error.response?.data || "Something went wrong");
     }
   }
 );
 
 export const addReadingHistory = createAsyncThunk(
-  '/reading-history',
+  "/reading-history",
   async (data, { rejectWithValue }) => {
-    const id = getCookie('id');
+    const id = getCookie("id");
     try {
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/api/${id}/reading-history`,
@@ -63,11 +63,10 @@ export const addReadingHistory = createAsyncThunk(
   }
 );
 
-
 export const getReadingHistory = createAsyncThunk(
-  '/getreading-history',
+  "/getreading-history",
   async (_, { rejectWithValue }) => {
-    const id = getCookie('id');
+    const id = getCookie("id");
     try {
       const res = await axios.get(
         `${import.meta.env.VITE_API_URL}/api/${id}/reading-history`
@@ -80,9 +79,9 @@ export const getReadingHistory = createAsyncThunk(
 );
 
 export const clearReadingHistory = createAsyncThunk(
-  '/clearReadingHistory',
+  "/clearReadingHistory",
   async (_, { rejectWithValue }) => {
-    const id = getCookie('id');
+    const id = getCookie("id");
     try {
       const res = await axios.delete(
         `${import.meta.env.VITE_API_URL}/api/${id}/reading-history`,
@@ -90,16 +89,46 @@ export const clearReadingHistory = createAsyncThunk(
       );
       return res.data;
     } catch (error) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to clear reading history');
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to clear reading history"
+      );
     }
   }
 );
 
+export const deleteSingleHistory = createAsyncThunk(
+  "news/deleteSingleHistory",
+  async (historyId, { rejectWithValue }) => {
+    const userId = getCookie("id"); // ✅ correct source for logged-in user
 
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_API_URL}/api/${userId}/reading-history/${historyId}`
+      );
+      return historyId;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || "Delete failed");
+    }
+  }
+);
 
+// ✅ Fetch news by category
+export const fetchNewsByCategory = createAsyncThunk(
+  "news/fetchNewsByCategory",
+  async (category, { rejectWithValue }) => {
+    try {
+      const res = await axios.get(
+        `${import.meta.env.VITE_API_URL}/api/news/category/${category}`
+      );
+      return res.data.news;
+    } catch (error) {
+      return rejectWithValue(error.response?.data?.message || error.message);
+    }
+  }
+);
 
 const newsSlice = createSlice({
-  name: 'news',
+  name: "news",
   initialState,
   extraReducers: (builder) => {
     builder
@@ -119,7 +148,7 @@ const newsSlice = createSlice({
         state.loading = true;
       })
       .addCase(fetchAllNews.fulfilled, (state, action) => {
-        console.log(action.payload);
+        // console.log(action.payload);
         state.totalPages = action.payload.totalPages;
         state.news = action.payload.data;
         state.totalCount = action.payload.totalCount;
@@ -144,7 +173,8 @@ const newsSlice = createSlice({
       })
       .addCase(getReadingHistory.rejected, (state, action) => {
         console.log(action.payload);
-      }).addCase(clearReadingHistory.pending, (state) => {
+      })
+      .addCase(clearReadingHistory.pending, (state) => {
         state.loading = true;
       })
       .addCase(clearReadingHistory.fulfilled, (state, action) => {
@@ -156,8 +186,23 @@ const newsSlice = createSlice({
         state.error = action.payload;
         state.loading = false;
       })
-      
-      
+      .addCase(deleteSingleHistory.fulfilled, (state, action) => {
+        state.readingHistory = state.readingHistory.filter(
+          (item) => item._id !== action.payload
+        );
+      })
+      .addCase(fetchNewsByCategory.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchNewsByCategory.fulfilled, (state, action) => {
+        state.loading = false;
+        state.news = action.payload; // backend se directly news array milta hai
+      })
+      .addCase(fetchNewsByCategory.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
   },
 });
 

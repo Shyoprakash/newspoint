@@ -1,31 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import { Pagination, Skeleton, Badge } from '@mantine/core';
-import { TrendingUp, Briefcase, Cpu, Volleyball, Landmark } from 'lucide-react';
-import { fetchAllNews, addReadingHistory } from '../redux/slice/newsSlice';
-import { useDispatch, useSelector } from 'react-redux';
+import React, { useEffect, useState } from "react";
+import { Pagination, Skeleton, Badge } from "@mantine/core";
+import { TrendingUp, Briefcase, Cpu, Volleyball, Landmark } from "lucide-react";
+import {
+  fetchAllNews,
+  fetchNewsByCategory,
+  addReadingHistory,
+} from "../redux/slice/newsSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 function NewsPage() {
   const { totalPages, totalCount, news, loading } = useSelector(
     (state) => state.news
   );
   const [currentPage, setCurrentPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const dispatch = useDispatch();
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const navigate = useNavigate();
 
   const categories = [
-    { name: 'Trending', icon: <TrendingUp size={18} /> },
-    { name: 'Politics', icon: <Landmark size={18} /> },
-    { name: 'Tech', icon: <Cpu size={18} /> },
-    { name: 'Sports', icon: <Volleyball size={18} /> },
-    { name: 'Business', icon: <Briefcase size={18} /> },
+    { name: "Trending", icon: <TrendingUp size={18} /> },
+    { name: "Politics", icon: <Landmark size={18} /> },
+    { name: "Tech", icon: <Cpu size={18} /> },
+    { name: "Sports", icon: <Volleyball size={18} /> },
+    { name: "Business", icon: <Briefcase size={18} /> },
   ];
 
+  const handleOpenDetail = (n) => {
+  if (!n._id) {
+    alert("This article is not stored in local database.");
+    return;
+  }
+
+  handleAddHistory(n);
+  navigate(`/news/${n._id}`);
+};
+
+  // useEffect(() => {
+  //   dispatch(fetchAllNews({ currentPage, search }));
+  // }, [currentPage, search]);
   useEffect(() => {
-    dispatch(fetchAllNews({ currentPage, search }));
-  }, [currentPage, search]);
+    if (selectedCategory) {
+      dispatch(fetchNewsByCategory(selectedCategory.toLowerCase()));
+    } else {
+      dispatch(fetchAllNews({ currentPage, search }));
+    }
+  }, [currentPage, search, selectedCategory]);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
 
   const handleAddHistory = (n) => {
@@ -90,7 +114,13 @@ function NewsPage() {
                   className="p-4 flex border border-gray-100 rounded-lg bg-white"
                 >
                   <div className="flex flex-col flex-1 gap-2">
-                    <a
+                    <h2
+                      onClick={() => handleOpenDetail(n)}
+                      className="text-xl text-gray-800 font-semibold hover:underline cursor-pointer"
+                    >
+                      {n.title}
+                    </h2>
+                    {/* <a
                       href={n.url}
                       onClick={() => handleAddHistory(n)}
                       target="_blank"
@@ -98,14 +128,23 @@ function NewsPage() {
                       className="text-xl text-gray-800 font-semibold hover:underline"
                     >
                       {n.title}
-                    </a>
+                    </a> */}
+                    <button
+                      onClick={() => {
+                        handleAddHistory(n);
+                        navigate(`/news/${n._id}`);
+                      }}
+                      className="text-left text-xl text-gray-800 font-semibold hover:underline"
+                    >
+                      {n.title}
+                    </button>
                     <p className="text-gray-700 text-md">{n.description}</p>
                     <div className="flex items-center gap-2 mt-2">
                       <Badge color="blue" variant="light">
-                        {n.source?.name || 'Unknown'}
+                        {n.source?.name || "Unknown"}
                       </Badge>
                       <Badge color="green" variant="light">
-                        {n.author || 'Unknown'}
+                        {n.author || "Unknown"}
                       </Badge>
                       <Badge color="gray" variant="light">
                         {new Date(n.publishedAt).toLocaleDateString()}

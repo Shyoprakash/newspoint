@@ -1,5 +1,3 @@
-
-
 import {
   Card,
   Image,
@@ -10,25 +8,54 @@ import {
   Flex,
   Popover,
   Tooltip,
-} from '@mantine/core';
-import { useDispatch, useSelector } from 'react-redux';
-import { motion } from 'framer-motion';
-import { useState } from 'react';
-import axios from 'axios';
-import { Eye, Bookmark, Sparkles, Copy } from 'lucide-react';
-import { addBookmarks, removeBookmarks } from '../redux/slice/bookmarkSlice';
+} from "@mantine/core";
+import { useDispatch, useSelector } from "react-redux";
+import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import { Eye, Bookmark, Sparkles, Copy } from "lucide-react";
+import { addBookmarks, removeBookmarks } from "../redux/slice/bookmarkSlice";
+import { useNavigate } from "react-router-dom"; // 🔴
+
 
 const ArticleCard = ({ article, category }) => {
+  const navigate = useNavigate(); // 🔴
+
   const dispatch = useDispatch();
   const { bookmarks } = useSelector((state) => state.bookmarks);
+  const [localBookmarked, setLocalBookmarked] = useState(false);
 
-  const isBookmarked = bookmarks.some((item) => item.url === article.url);
-
+  // const isBookmarked = bookmarks.some((item) => item.url === article.url);
+  // const isBookmarked = Array.isArray(bookmarks) && article?.url   ? bookmarks.some((item) => item?.url === article?.url)
+  //    : false;
   const [opened, setOpened] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [summary, setSummary] = useState('');
+  const [summary, setSummary] = useState("");
   const [copySuccess, setCopySuccess] = useState(false);
   const [error, setError] = useState(null);
+
+  const handleOpenDetail = (article) => {
+  if (!article._id) {
+    alert("This article is not stored in local database.");
+    return;
+  }
+
+  handleAddHistory(article);
+  navigate(`/news/${article._id}`);
+};
+
+
+  useEffect(() => {
+    if (Array.isArray(bookmarks) && article?.url) {
+      const found = bookmarks.some(
+        (item) =>
+          item?.article?.url === article?.url || item?.url === article?.url
+      );
+      if (found !== localBookmarked) {
+        setLocalBookmarked(found);
+      }
+    }
+  }, [bookmarks, article?.url]);
 
   const handleBookmark = () => {
     const data = {
@@ -42,10 +69,18 @@ const ArticleCard = ({ article, category }) => {
       },
     };
 
-    if (isBookmarked) {
+    //   if (isBookmarked) {
+    //     dispatch(removeBookmarks(article.url));
+    //   } else {
+    //     dispatch(addBookmarks(data));
+    //   }
+    // };
+    if (localBookmarked) {
       dispatch(removeBookmarks(article.url));
+      setLocalBookmarked(false); // 🔴 instant UI feedback
     } else {
       dispatch(addBookmarks(data));
+      setLocalBookmarked(true); // 🔴 instant UI feedback
     }
   };
 
@@ -54,7 +89,7 @@ const ArticleCard = ({ article, category }) => {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/summarize`,
+        `${import.meta.env.VITE_API_URL}/api/ai/summarize`,
         { url: article.url }
       );
       setSummary(res.data.summary);
@@ -71,7 +106,13 @@ const ArticleCard = ({ article, category }) => {
   };
 
   return (
-    <Card shadow="sm" p="lg" radius="md" withBorder className="flex flex-row gap-6">
+    <Card
+      shadow="sm"
+      p="lg"
+      radius="md"
+      withBorder
+      className="flex flex-row gap-6"
+    >
       {article.urlToImage && (
         <Image
           src={article.urlToImage}
@@ -81,6 +122,7 @@ const ArticleCard = ({ article, category }) => {
           fit="contain"
           radius="md"
           className="object-cover"
+          
         />
       )}
 
@@ -93,7 +135,7 @@ const ArticleCard = ({ article, category }) => {
 
         <h2
           className="cursor-pointer text-xl hover:text-amber-500 hover:underline mt-2"
-          onClick={() => window.open(article.url, '_blank')}
+           onClick={() => handleOpenDetail(article)}
         >
           {article.title}
         </h2>
@@ -105,11 +147,13 @@ const ArticleCard = ({ article, category }) => {
         <Group mt="md" spacing="xs">
           <Flex align="center" gap="xs">
             <Eye size={16} />
-            <Text size="sm">{article.views || Math.floor(Math.random() * 500)}</Text>
+            <Text size="sm">
+              {article.views || Math.floor(Math.random() * 500)}
+            </Text>
           </Flex>
 
-          <Tooltip
-            label={isBookmarked ? 'Remove Bookmark' : 'Bookmark this article'}
+          {/* <Tooltip
+            label={isBookmarked ? "Remove Bookmark" : "Bookmark this article"}
             withArrow
             position="top"
           >
@@ -117,9 +161,31 @@ const ArticleCard = ({ article, category }) => {
               onClick={handleBookmark}
               variant="outline"
               size="sm"
-              color={isBookmarked ? 'red' : 'blue'}
+              color={isBookmarked ? "red" : "blue"}
             >
-              <Bookmark size={18} fill={isBookmarked ? 'currentColor' : 'none'} />
+              <Bookmark
+                size={18}
+                fill={isBookmarked ? "currentColor" : "none"}
+              />
+            </ActionIcon>
+          </Tooltip> */}
+          <Tooltip
+            label={
+              localBookmarked ? "Remove Bookmark" : "Bookmark this article"
+            }
+            withArrow
+            position="top"
+          >
+            <ActionIcon
+              onClick={handleBookmark}
+              variant="outline"
+              size="sm"
+              color={localBookmarked ? "red" : "blue"} // 🔴 color now controlled by local state
+            >
+              <Bookmark
+                size={18}
+                fill={localBookmarked ? "currentColor" : "none"}
+              />
             </ActionIcon>
           </Tooltip>
 
@@ -138,14 +204,14 @@ const ArticleCard = ({ article, category }) => {
                   onClick={handleSummarize}
                   size="md"
                   color="yellow"
-                  gradient={{ from: 'blue', to: 'cyan', deg: 330 }}
+                  gradient={{ from: "blue", to: "cyan", deg: 330 }}
                 >
                   <Sparkles size={18} />
                 </ActionIcon>
               </Tooltip>
             </Popover.Target>
 
-            <Popover.Dropdown style={{ minHeight: isLoading ? 150 : 'auto' }}>
+            <Popover.Dropdown style={{ minHeight: isLoading ? 150 : "auto" }}>
               {isLoading ? (
                 <Flex align="center" justify="center" gap="sm">
                   <motion.span
@@ -166,7 +232,7 @@ const ArticleCard = ({ article, category }) => {
                 </Flex>
               ) : (
                 <motion.div>
-                  {summary.split(' ').map((word, index) => (
+                  {summary.split(" ").map((word, index) => (
                     <motion.span
                       key={index}
                       className="text-gray-800"
@@ -174,12 +240,12 @@ const ArticleCard = ({ article, category }) => {
                       animate={{ opacity: 1 }}
                       transition={{ delay: index * 0.05 }}
                     >
-                      {word}{' '}
+                      {word}{" "}
                     </motion.span>
                   ))}
                   <Flex justify="flex-end" mt="sm">
                     <Tooltip
-                      label={copySuccess ? 'Copied!' : 'Copy summary'}
+                      label={copySuccess ? "Copied!" : "Copy summary"}
                       withArrow
                       position="top"
                     >

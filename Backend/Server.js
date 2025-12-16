@@ -14,6 +14,7 @@ import readingHistoryRoutes from './routes/readingHistoryRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import { fetchNewsAndStore } from "./utils/fetchNews.js";
 import newRoutes from './routes/newsRoutes.js';
+import newsRoutesShow from "./routes/newsRoutesShow.js";
 
 dotenv.config();
 const app = express();
@@ -39,6 +40,8 @@ cron.schedule("*/15 * * * *", fetchNewsAndStore);
 console.log("✅ News fetch cron job scheduled every 15 minutes.");
 
 // ✅ Routes
+// app.use("/api/news", newsRoutesShow); // ese or niche wale dono routes ko ek sath on karne pe essu hota h news nhi dikhti ya news pages par nhi jata
+app.use("/api/news", newsRoutesShow);
 app.use('/auth', userRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api', bookmarksRoutes);
@@ -60,3 +63,5 @@ app.use((req, res) => {
 app.listen(process.env.PORT, () => {
   console.log(`🚀 Server is running on port ${process.env.PORT}`);
 });
+
+
